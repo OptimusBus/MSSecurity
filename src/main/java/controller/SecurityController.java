@@ -8,6 +8,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+import org.bson.Document;
+
 import com.mongodb.BasicDBObject;
 
 import model.Authentication;
@@ -29,10 +31,8 @@ public class SecurityController {
 	@Path("/requestVehicleReg")
 	public Response requestVehicleReg(String request) {
 		BasicDBObject b = BasicDBObject.parse(request);
-		String username = b.getString("username");
-		String email = b.getString("email");
-		String password = b.getString("password");
-		VehicleReg v = new VehicleReg(username, email, password);
+		Document d = new Document(b);
+		VehicleReg v = VehicleReg.convertDocumentToVehicleReg(d);
 		boolean res = branch.createVehicleReg(v);
 		if(res) {
 			return Response.ok().entity("Vehicle registered").build();
@@ -44,9 +44,8 @@ public class SecurityController {
 	@Path("/authVehicle")
 	public Response authVehicle(String request) {
 		BasicDBObject b = BasicDBObject.parse(request);
-		String username = b.getString("username");
-		String password = b.getString("password");
-		Authentication a = new Authentication(username, password);
+		Document d = new Document(b);
+		Authentication a = Authentication.convertDocumentToAuthentication(d);
 		return null;
 	}
 	
@@ -62,13 +61,8 @@ public class SecurityController {
 	@Path("/requestPassengerReg")
 	public Response requestPassengerReg(String request) {
 		BasicDBObject b = BasicDBObject.parse(request);
-		String username = b.getString("username");
-		String email = b.getString("email");
-		String password = b.getString("password");
-		String name = b.getString("name");
-		String surname = b.getString("surname");
-		String age = b.getString("age");
-		PassengerReg pr = new PassengerReg(username, password, email, name, surname, age);
+		Document d = new Document(b); 
+		PassengerReg p = PassengerReg.convertDocumentToPassengerReg(d);
 		return null;
 	}
 	
@@ -76,9 +70,8 @@ public class SecurityController {
 	@Path("/authPassenger")
 	public Response authPassenger(String request) {
 		BasicDBObject b = BasicDBObject.parse(request);
-		String username = b.getString("username");
-		String password = b.getString("password");
-		Authentication a = new Authentication(username, password);
+		Document d = new Document(b);
+		Authentication a = Authentication.convertDocumentToAuthentication(d);
 		return null;
 	}
 	

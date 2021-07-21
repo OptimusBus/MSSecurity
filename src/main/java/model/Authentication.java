@@ -1,5 +1,10 @@
 package model;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.bson.Document;
+
+@XmlRootElement
 public class Authentication {
 	private String username;
 	private String password;
@@ -23,6 +28,17 @@ public class Authentication {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public static Authentication convertDocumentToAuthentication(Document d) {
+		return new Authentication(d.getString("username"),d.getString("password"));
+	}
+	
+	public static Document convertAuthenticationToDocument(Authentication a) {
+		Document d = new Document();
+		d.append("username", a.getUsername());
+		d.append("password", a.getPassword());
+		return d;
 	}
 	
 }

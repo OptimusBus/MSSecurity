@@ -1,7 +1,10 @@
 package model;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.bson.Document;
 
+@XmlRootElement
 public class VehicleReg {
 
 	public VehicleReg(String username, String email, String password) {
