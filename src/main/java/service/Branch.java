@@ -86,7 +86,7 @@ public class Branch implements BranchLocal {
 	public VehicleReg getVehiRegByUsername(String username) {
 		Document d = mdb.getVehicleRegByUsername(username);
 		if(d != null) {
-			return VehicleReg.convertDocumentToVehicleReg(d);
+			return VehicleReg.decodeVehicleReg(d);
 		}else {
 			System.err.println("No PassengerReg for username: " + username);
 		}
@@ -97,7 +97,7 @@ public class Branch implements BranchLocal {
 	public VehicleReg getVehiRegByEmail(String email) {
 		Document d = mdb.getVehicleRegByEmail(email);
 		if(d != null) {
-			return VehicleReg.convertDocumentToVehicleReg(d);
+			return VehicleReg.decodeVehicleReg(d);
 		}else {
 			System.err.println("No PassengerReg for email: " + email);
 		}
@@ -107,7 +107,7 @@ public class Branch implements BranchLocal {
 	private List<VehicleReg> convertVehiRegDocumentList(List<Document> docs) {
 		List<VehicleReg> vs = new ArrayList<VehicleReg>();
 		for(Document d : docs) {
-			vs.add(VehicleReg.convertDocumentToVehicleReg(d));
+			vs.add(VehicleReg.decodeVehicleReg(d));
 		}
 		return vs;
 	}

@@ -32,7 +32,7 @@ public class SecurityController {
 	public Response requestVehicleReg(String request) {
 		BasicDBObject b = BasicDBObject.parse(request);
 		Document d = new Document(b);
-		VehicleReg v = VehicleReg.convertDocumentToVehicleReg(d);
+		VehicleReg v = VehicleReg.decodeVehicleReg(d);
 		boolean res = branch.createVehicleReg(v);
 		if(res) {
 			return Response.ok().entity("Vehicle registered").build();

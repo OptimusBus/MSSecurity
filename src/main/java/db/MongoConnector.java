@@ -65,7 +65,7 @@ public class MongoConnector {
 	public void addVehicleReg(VehicleReg v) {
 		MongoDatabase db = m.getDatabase("SecurityDB");
 		MongoCollection<Document> coll = db.getCollection("vehiclesReg");
-		Document pass = VehicleReg.convertPassengerRegToDocument(v);
+		Document pass = VehicleReg.encodeVehicleReg(v);
 		coll.insertOne(pass);
 	}
 }
