@@ -5,7 +5,7 @@ import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
 
-@ApplicationPath("/Security-v1")
+@ApplicationPath("/Security-1.0")
 public class SecurityApplication {
 	public Set<Class<?>> getClasses(){
 		Set<Class<?>> s = new HashSet<Class<?>>();
