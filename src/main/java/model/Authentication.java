@@ -30,11 +30,11 @@ public class Authentication {
 		this.password = password;
 	}
 
-	public static Authentication convertDocumentToAuthentication(Document d) {
-		return new Authentication(d.getString("username"),d.getString("password"));
+	public static Authentication decodeAuth(Document d) {
+		return new Authentication(d.getString("username"), d.getString("password"));
 	}
 	
-	public static Document convertAuthenticationToDocument(Authentication a) {
+	public static Document encodeAuth(Authentication a) {
 		Document d = new Document();
 		d.append("username", a.getUsername());
 		d.append("password", a.getPassword());

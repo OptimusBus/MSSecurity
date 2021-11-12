@@ -1,9 +1,14 @@
 package controller;
 
+import java.security.NoSuchAlgorithmException;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
@@ -11,7 +16,7 @@ import javax.ws.rs.core.Response;
 import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
-
+import mail.MailSender;
 import model.Authentication;
 import model.PassengerReg;
 import model.VehicleReg;
@@ -29,15 +34,15 @@ public class SecurityController {
 	
 	@POST
 	@Path("/requestVehicleReg")
-	public Response requestVehicleReg(String request) {
+	public Response requestVehicleReg(String request) throws NoSuchAlgorithmException {
 		BasicDBObject b = BasicDBObject.parse(request);
 		Document d = new Document(b);
 		VehicleReg v = VehicleReg.decodeVehicleReg(d);
 		boolean res = branch.createVehicleReg(v);
 		if(res) {
-			return Response.ok().entity("Vehicle registered").build();
+			return Response.status(201).entity("Vehicle registered").build();
 		}
-		return Response.noContent().entity("Impossible to create the vehicle").build();
+		return Response.status(500).entity("Impossible to create the vehicle").build();
 	}
 	
 	@POST
@@ -45,25 +50,36 @@ public class SecurityController {
 	public Response authVehicle(String request) {
 		BasicDBObject b = BasicDBObject.parse(request);
 		Document d = new Document(b);
-		Authentication a = Authentication.convertDocumentToAuthentication(d);
-		return null;
+		Authentication a = Authentication.decodeAuth(d);
+		VehicleReg v = branch.getVehicleByCredential(a);
+		if(v != null) return Response.ok().entity(v.getId()).build();
+		return Response.status(401).entity("Unauthorized").build();
 	}
 	
 	@POST
 	@Path("/forgotVehicleCredentials")
-	public Response forgotVehicleCredentials(String request) {
+	public Response forgotVehicleCredentials(String request) throws AddressException, MessagingException {
 		BasicDBObject b = BasicDBObject.parse(request);
 		String email = b.getString("email");
-		return null;
+		VehicleReg v = branch.getVehiRegByEmail(email);
+		if(v != null) {
+			MailSender.sendMail(v.getPassword(), email, "Password Recovery");
+			return Response.ok().entity("Mail Sent").build();
+		}
+		return Response.status(404).entity("No passenger found").build();
 	}
 	
 	@POST
 	@Path("/requestPassengerReg")
-	public Response requestPassengerReg(String request) {
+	public Response requestPassengerReg(String request) throws NoSuchAlgorithmException {
 		BasicDBObject b = BasicDBObject.parse(request);
 		Document d = new Document(b); 
-		PassengerReg p = PassengerReg.convertDocumentToPassengerReg(d);
-		return null;
+		PassengerReg p = PassengerReg.decodePassengerRegRequest(d);
+		boolean res = branch.createPassengerReg(p);
+		if(res) {
+			return Response.status(201).entity("Passenger registered").build();
+		}
+		return Response.status(500).entity("Registering Error").build();
 	}
 	
 	@POST
@@ -71,24 +87,44 @@ public class SecurityController {
 	public Response authPassenger(String request) {
 		BasicDBObject b = BasicDBObject.parse(request);
 		Document d = new Document(b);
-		Authentication a = Authentication.convertDocumentToAuthentication(d);
-		return null;
+		Authentication a = Authentication.decodeAuth(d);
+		PassengerReg p = branch.getPassengerByCredential(a);
+		if(p != null) return Response.ok().entity(p.getId()).build();
+		return Response.status(401).entity("Unauthorized").build();
 	}
 	
 	@POST
 	@Path("/forgotPassengerCredentials")
-	public Response forgotPassengerCredentials(String request) {
+	public Response forgotPassengerCredentials(String request) throws AddressException, MessagingException {
 		BasicDBObject b = BasicDBObject.parse(request);
 		String email = b.getString("email");
-		//Send email per il recupero della pssword
-		return null;
+		PassengerReg p = branch.getPassRegByEmail(email);
+		if(p != null) {
+			MailSender.sendMail(p.getPassword(), email, "Password Recovery");
+			return Response.ok().entity("Mail Sent").build();
+		}
+		return Response.status(404).entity("No passenger found").build();
 	}
 	
 	@GET
-	@Path("/getPassengerId")
-	public Response getPassenger(@QueryParam("username")String username) {
+	@Path("/getPassengerReg/{username}")
+	public Response getPassenger(@PathParam("username")String username) {
 		PassengerReg p = branch.getPassRegByUsername(username); 
-		//interrogazione passenger service per ottenere il passengerId
-		return Response.ok().entity("OK").build();
+		if(p != null) return Response.ok().entity(p).build();
+		return Response.status(404).entity("Not Found").build();
+	}
+	
+	@GET
+	@Path("/validateToken")
+	public Response validateToken(@QueryParam("apitoken")String token, @QueryParam("email")String email) {
+		String[] t = token.split(".");
+		if(t[0].equalsIgnoreCase("PA")) {
+			PassengerReg p = branch.getPassRegByEmail(email);
+			if(p != null && branch.checkToken(email, token, "PASSENGER")) return Response.ok().entity("PASSENGER").build();
+		}else if(t[0].equalsIgnoreCase("VE")) {
+			VehicleReg v = branch.getVehiRegByEmail(email);
+			if(v != null && branch.checkToken(email, token, "VEHICLE")) return Response.ok().entity("VEHICLE").build();
+		}else return Response.status(400).entity("Invalid Api Token").build();
+		return Response.status(401).entity("Unathorized").build();
 	}
 }

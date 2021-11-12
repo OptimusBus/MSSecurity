@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bson.Document;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -14,7 +15,7 @@ import model.PassengerReg;
 import model.VehicleReg;
 
 public class MongoConnector {
-	private MongoClient m = new MongoClient("172.18.10.144", 31181);
+	private static final MongoClient m = new MongoClient("137.121.170.248", 31186);
 	public MongoConnector() {}
 	
 	public List<Document> getAllVehiclesReg(){
@@ -55,14 +56,32 @@ public class MongoConnector {
 		return coll.find(Filters.eq("email", email)).first();
 	}
 	
-	public void addPassengerReg(PassengerReg p) {
+	public Document getPassengerIdByCredential(String username, String password) {
 		MongoDatabase db = m.getDatabase("SecurityDB");
 		MongoCollection<Document> coll = db.getCollection("passengersReg");
-		Document pass = PassengerReg.convertPassengerRegToDocument(p);
+		BasicDBObject criteria = new BasicDBObject();
+		criteria.append("username", username);
+		criteria.append("password", password);
+		return coll.find(criteria).first();
+	}
+	
+	public Document getVehcileIdByCredential(String username, String password) {
+		MongoDatabase db = m.getDatabase("SecurityDB");
+		MongoCollection<Document> coll = db.getCollection("vehicleReg");
+		BasicDBObject criteria = new BasicDBObject();
+		criteria.append("username", username);
+		criteria.append("password", password);
+		return coll.find(criteria).first();
+	}
+	
+	public void passengerRegPersist(PassengerReg p) {
+		MongoDatabase db = m.getDatabase("SecurityDB");
+		MongoCollection<Document> coll = db.getCollection("passengersReg");
+		Document pass = PassengerReg.encodePassengerReg(p);
 		coll.insertOne(pass);
 	}
 	
-	public void addVehicleReg(VehicleReg v) {
+	public void vehicleRegPersist(VehicleReg v) {
 		MongoDatabase db = m.getDatabase("SecurityDB");
 		MongoCollection<Document> coll = db.getCollection("vehiclesReg");
 		Document pass = VehicleReg.encodeVehicleReg(v);
