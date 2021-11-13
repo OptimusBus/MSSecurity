@@ -56,6 +56,7 @@ public class VehicleReg {
 	}
 	
 	public static VehicleReg decodeVehicleRegRequest(Document d) {
+		if(d == null) return null;
 		if(d.size() == 0) return null;
 		String id = d.getString("id");
 		String us = d.getString("username");
@@ -65,6 +66,7 @@ public class VehicleReg {
 	}
 	
 	public static VehicleReg decodeVehicleReg(Document d) {
+		if(d == null) return null;
 		if(d.size() == 0) return null;
 		String id = d.getString("id");
 		String us = d.getString("username");
