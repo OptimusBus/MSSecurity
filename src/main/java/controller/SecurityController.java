@@ -52,7 +52,11 @@ public class SecurityController {
 		Document d = new Document(b);
 		Authentication a = Authentication.decodeAuth(d);
 		VehicleReg v = branch.getVehicleByCredential(a);
-		if(v != null) return Response.ok().entity(v.getId()).build();
+		if(v != null) {
+			Document doc = new Document();
+			doc.append("vehicleId", v.getVehicleId());
+			return Response.ok(doc).build();
+		}
 		return Response.status(401).entity("Unauthorized").build();
 	}
 	
@@ -64,7 +68,7 @@ public class SecurityController {
 		VehicleReg v = branch.getVehiRegByEmail(email);
 		if(v != null) {
 			MailSender.sendMail(v.getPassword(), email, "Password Recovery");
-			return Response.ok().entity("Mail Sent").build();
+			return Response.ok("Mail Sent").build();
 		}
 		return Response.status(404).entity("No passenger found").build();
 	}
@@ -89,7 +93,11 @@ public class SecurityController {
 		Document d = new Document(b);
 		Authentication a = Authentication.decodeAuth(d);
 		PassengerReg p = branch.getPassengerByCredential(a);
-		if(p != null) return Response.ok().entity(p.getId()).build();
+		if(p != null) { 
+			Document doc = new Document();
+			doc.append("passengerId", p.getPassengerId());
+			return Response.ok(doc).build();
+		}
 		return Response.status(401).entity("Unauthorized").build();
 	}
 	
@@ -101,7 +109,7 @@ public class SecurityController {
 		PassengerReg p = branch.getPassRegByEmail(email);
 		if(p != null) {
 			MailSender.sendMail(p.getPassword(), email, "Password Recovery");
-			return Response.ok().entity("Mail Sent").build();
+			return Response.ok("Mail Sent").build();
 		}
 		return Response.status(404).entity("No passenger found").build();
 	}
@@ -110,7 +118,7 @@ public class SecurityController {
 	@Path("/getPassengerReg/{username}")
 	public Response getPassenger(@PathParam("username")String username) {
 		PassengerReg p = branch.getPassRegByUsername(username); 
-		if(p != null) return Response.ok().entity(p).build();
+		if(p != null) return Response.ok(p).build();
 		return Response.status(404).entity("Not Found").build();
 	}
 	
@@ -120,10 +128,10 @@ public class SecurityController {
 		String[] t = token.split(".");
 		if(t[0].equalsIgnoreCase("PA")) {
 			PassengerReg p = branch.getPassRegByEmail(email);
-			if(p != null && branch.checkToken(email, token, "PASSENGER")) return Response.ok().entity("PASSENGER").build();
+			if(p != null && branch.checkToken(email, token, "PASSENGER")) return Response.ok("PASSENGER").build();
 		}else if(t[0].equalsIgnoreCase("VE")) {
 			VehicleReg v = branch.getVehiRegByEmail(email);
-			if(v != null && branch.checkToken(email, token, "VEHICLE")) return Response.ok().entity("VEHICLE").build();
+			if(v != null && branch.checkToken(email, token, "VEHICLE")) return Response.ok("VEHICLE").build();
 		}else return Response.status(400).entity("Invalid Api Token").build();
 		return Response.status(401).entity("Unathorized").build();
 	}

@@ -67,7 +67,7 @@ public class MongoConnector {
 	
 	public Document getVehcileIdByCredential(String username, String password) {
 		MongoDatabase db = m.getDatabase("SecurityDB");
-		MongoCollection<Document> coll = db.getCollection("vehicleReg");
+		MongoCollection<Document> coll = db.getCollection("vehiclesReg");
 		BasicDBObject criteria = new BasicDBObject();
 		criteria.append("username", username);
 		criteria.append("password", password);
